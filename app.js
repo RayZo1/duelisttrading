@@ -1,4 +1,8 @@
+import { db } from './firebase-config.js';
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
 // State
+let itemsData = [];
 let activeTab = 'values';
 let activeCategory = 'All';
 let searchQuery = '';
@@ -33,16 +37,14 @@ const modalBody = document.getElementById('modal-body');
 
 // Formatting
 const formatMoney = (amount) => {
+    if (!amount) return '$0';
     return '$' + amount.toLocaleString();
 };
 
 // Initialize
-function init() {
+async function init() {
     setupTabs();
-    setupCategories();
     setupSearch();
-    renderGrid();
-    updateCalculator();
     
     // Close modal on click outside
     modal.addEventListener('click', (e) => {
@@ -52,6 +54,31 @@ function init() {
     modalSearch.addEventListener('input', (e) => {
         renderModalItems(e.target.value);
     });
+
+    // Make global for inline onclick
+    window.openModal = openModal;
+
+    itemsGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">Loading items from Firebase... Make sure you updated firebase-config.js with your Web API credentials!</div>';
+
+    try {
+        const querySnapshot = await getDocs(collection(db, "items"));
+        itemsData = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+
+        if(itemsData.length === 0) {
+             itemsGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">Connected to Firebase! But there are no items in the "items" collection.</div>';
+        } else {
+             setupCategories();
+             renderGrid();
+        }
+    } catch (e) {
+        console.error("Error fetching items: ", e);
+        itemsGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--loss-color);">Could not connect to Firebase.<br><br><small>${e.message}</small><br><br>Make sure you added your config to <code>firebase-config.js</code></div>`;
+    }
+
+    updateCalculator();
 }
 
 // Tabs
@@ -73,7 +100,7 @@ function setupTabs() {
 
 // Categories
 function setupCategories() {
-    const categories = ['All', ...new Set(itemsData.map(item => item.category))];
+    const categories = ['All', ...new Set(itemsData.map(item => item.category).filter(Boolean))];
     categoryContainer.innerHTML = '';
     
     categories.forEach(cat => {
@@ -107,7 +134,7 @@ function renderGrid() {
     }
     
     if (searchQuery) {
-        filtered = filtered.filter(item => item.name.toLowerCase().includes(searchQuery));
+        filtered = filtered.filter(item => item.name && item.name.toLowerCase().includes(searchQuery));
     }
     
     itemsGrid.innerHTML = '';
@@ -117,10 +144,10 @@ function renderGrid() {
         card.className = 'item-card';
         card.innerHTML = `
             <div class="card-header">
-                <span>${item.category}</span>
+                <span>${item.category || 'Uncategorized'}</span>
             </div>
-            <div class="card-title">${item.name}</div>
-            <img src="${item.image}" alt="${item.name}" class="card-image">
+            <div class="card-title">${item.name || 'Unnamed Item'}</div>
+            <img src="${item.image || 'https://placehold.co/150x100/111/444?text=No+Image'}" alt="${item.name}" class="card-image">
             <div class="card-stats">
                 <div style="display:flex; flex-direction:column; gap:0.2rem;">
                     <span class="stat-label">Value</span>
@@ -128,17 +155,17 @@ function renderGrid() {
                 </div>
                 <div style="display:flex; flex-direction:column; gap:0.2rem; align-items:flex-end;">
                     <span class="stat-label">Duped</span>
-                    <span class="stat-value money">${formatMoney(item.dupedValue)}</span>
+                    <span class="stat-value money">${formatMoney(item.dupedValue || item.value)}</span>
                 </div>
             </div>
             <div class="card-stats" style="margin-bottom:0">
                 <div style="display:flex; flex-direction:column; gap:0.2rem;">
                     <span class="stat-label">Demand</span>
-                    <span class="stat-value" style="color:var(--text-primary)">${item.demand}</span>
+                    <span class="stat-value" style="color:var(--text-primary)">${item.demand || 'N/A'}</span>
                 </div>
                 <div style="display:flex; flex-direction:column; gap:0.2rem; align-items:flex-end;">
                     <span class="stat-label">Rarity</span>
-                    <span class="stat-value" style="color:var(--text-secondary)">${item.rarity}</span>
+                    <span class="stat-value" style="color:var(--text-secondary)">${item.rarity || 'N/A'}</span>
                 </div>
             </div>
         `;
@@ -163,7 +190,7 @@ function renderModalItems(query) {
     let filtered = itemsData;
     if (query) {
         const q = query.toLowerCase();
-        filtered = filtered.filter(item => item.name.toLowerCase().includes(q));
+        filtered = filtered.filter(item => item.name && item.name.toLowerCase().includes(q));
     }
     
     modalBody.innerHTML = '';
@@ -172,8 +199,8 @@ function renderModalItems(query) {
         div.className = 'modal-item';
         div.innerHTML = `
             <div style="display:flex; align-items:center;">
-                <img src="${item.image}" alt="${item.name}">
-                <span style="color:white; font-weight:600;">${item.name}</span>
+                <img src="${item.image || 'https://placehold.co/150x100/111/444?text=No+Image'}" alt="${item.name}">
+                <span style="color:white; font-weight:600;">${item.name || 'Unnamed Item'}</span>
             </div>
             <span class="format-money">${formatMoney(item.value)}</span>
         `;
@@ -226,7 +253,7 @@ function renderCalcItem(item, side) {
     
     card.innerHTML = `
         <div class="card-title" style="font-size:1rem; margin-bottom:0.5rem; text-align:center;">${item.name}</div>
-        <img src="${item.image}" alt="${item.name}" class="card-image" style="height:80px; margin-bottom:0.5rem;">
+        <img src="${item.image || 'https://placehold.co/150x100/111/444?text=No+Image'}" alt="${item.name}" class="card-image" style="height:80px; margin-bottom:0.5rem;">
         <div class="card-stats" style="margin-bottom:0; justify-content:center;">
             <span class="stat-value money" style="font-size:1rem;">${formatMoney(item.value)}</span>
         </div>
@@ -237,8 +264,8 @@ function renderCalcItem(item, side) {
 
 function updateCalculator() {
     // Totals
-    const yourTotal = yourOffer.reduce((acc, item) => acc + item.value, 0);
-    const theirTotal = theirOffer.reduce((acc, item) => acc + item.value, 0);
+    const yourTotal = yourOffer.reduce((acc, item) => acc + (item.value || 0), 0);
+    const theirTotal = theirOffer.reduce((acc, item) => acc + (item.value || 0), 0);
     
     yourTotalEl.textContent = formatMoney(yourTotal);
     theirTotalEl.textContent = formatMoney(theirTotal);
@@ -277,11 +304,11 @@ function updateCalculator() {
         if (diff > 0) {
             diffTextEl.textContent = '+' + formatMoney(diff);
             diffTextEl.className = 'diff-text diff-win';
-            diffFillEl.style.backgroundColor = 'var(--loss-color)'; // Your side is smaller, so it should be red
+            diffFillEl.style.backgroundColor = 'var(--loss-color)'; 
         } else if (diff < 0) {
-            diffTextEl.textContent = formatMoney(diff); // already has minus sign if it was just diff, wait no. diff is negative so it has minus sign natively
+            diffTextEl.textContent = formatMoney(diff);
             diffTextEl.className = 'diff-text diff-loss';
-            diffFillEl.style.backgroundColor = 'var(--primary-color)'; // Your side is bigger
+            diffFillEl.style.backgroundColor = 'var(--primary-color)'; 
         } else {
             diffTextEl.textContent = 'Fair';
             diffTextEl.className = 'diff-text';
