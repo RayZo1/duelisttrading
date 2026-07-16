@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duelist Values</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo"><span>DUELIST</span><span>VALUES</span></div>
+        <div class="nav-links">
+            <button class="nav-btn active" id="tab-values">Values</button>
+            <button class="nav-btn" id="tab-calculator">Calculator</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        
+        <!-- Values View -->
+        <div id="view-values">
+            <div class="page-header">
+                <h1>Duelist Trading Values</h1>
+                <p style="color: var(--text-secondary);">The largest Value List for Roblox Duelist, providing the community with accurate values.</p>
+            </div>
+
+            <div class="categories" id="category-container">
+                <!-- Injected via JS -->
+            </div>
+
+            <div class="search-container">
+                <input type="text" class="search-input" id="search-input" placeholder="Search item...">
+            </div>
+
+            <div class="items-grid" id="items-grid">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+        <!-- Calculator View -->
+        <div id="view-calculator" class="calculator-section hidden">
+            <div class="page-header">
+                <h1>Duelist Trading Calculator</h1>
+            </div>
+
+            <div class="calc-sides">
+                <div class="calc-side">
+                    <div class="calc-side-header">
+                        <span>Your Offer</span>
+                        <span id="your-total">$0</span>
+                    </div>
+                    <div class="calc-items" id="your-items">
+                        <button class="add-item-btn" onclick="openModal('your')">+</button>
+                    </div>
+                </div>
+
+                <div class="calc-side">
+                    <div class="calc-side-header">
+                        <span>Their Offer</span>
+                        <span id="their-total">$0</span>
+                    </div>
+                    <div class="calc-items" id="their-items">
+                        <button class="add-item-btn" onclick="openModal('their')">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="diff-container">
+                <div style="display:flex; justify-content:space-between; font-size:0.9rem; color:var(--text-secondary)">
+                    <span>You: <span id="diff-you">$0</span></span>
+                    <span>Them: <span id="diff-them">$0</span></span>
+                </div>
+                <div class="diff-bar">
+                    <div class="diff-fill" id="diff-fill"></div>
+                </div>
+                <div class="diff-text" id="diff-text">
+                    $0
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal for selecting items -->
+    <div class="modal-overlay" id="item-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <input type="text" class="modal-search" id="modal-search" placeholder="Search item...">
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
