@@ -1,15 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --bg-color: #060B19;
-    --card-bg: rgba(13, 20, 38, 0.5);
-    --text-primary: #FFFFFF;
-    --text-secondary: #94A3B8;
-    --primary-color: #3B82F6;
-    --primary-hover: #60A5FA;
-    --border-color: rgba(59, 130, 246, 0.15);
-    --loss-color: #EF4444;
-    --win-color: #10B981;
+    --bg-color: #0d111a;
+    --card-bg: #161c2a;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --primary-color: #2563eb;
+    --primary-hover: #3b82f6;
+    --border-color: #2e3748;
+    --loss-color: #dc2626;
+    --win-color: #16a34a;
     --font-family: 'Poppins', -apple-system, sans-serif;
 }
 
@@ -25,8 +25,8 @@ body {
     user-select: none;
     background-color: var(--bg-color);
     background-image:
-        radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.07), transparent 30%),
-        radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.07), transparent 30%);
+        radial-gradient(circle at 15% 50%, rgba(37, 99, 235, 0.05), transparent 40%),
+        radial-gradient(circle at 85% 30%, rgba(29, 78, 216, 0.05), transparent 40%);
     color: var(--text-primary);
     font-family: var(--font-family);
     min-height: 100vh;
@@ -46,14 +46,12 @@ body::-webkit-scrollbar {
     align-items: center;
     justify-content: space-between;
     padding: 1rem 2.5rem;
-    background: rgba(6, 11, 25, 0.75);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    background: #0d111a;
     border-bottom: 1px solid var(--border-color);
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     will-change: transform;
 }
 
@@ -66,9 +64,7 @@ body::-webkit-scrollbar {
 }
 
 .logo span:first-child {
-    background: linear-gradient(135deg, #60A5FA, #3B82F6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--primary-hover);
 }
 
 .nav-links {
@@ -101,7 +97,8 @@ body::-webkit-scrollbar {
 
 .nav-btn.active {
     color: #FFF;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+    background: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 /* ─── Layout ─────────────────────────────────────────── */
@@ -165,7 +162,7 @@ body::-webkit-scrollbar {
     background: var(--primary-color);
     color: white;
     border-color: var(--primary-color);
-    box-shadow: 0 4px 18px rgba(59, 130, 246, 0.45);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     transform: translateY(-2px);
 }
 
@@ -296,7 +293,6 @@ body::-webkit-scrollbar {
 
 /* ─── Calculator ─────────────────────────────────────── */
 .calculator-section {
-    display: none;
     animation: fadeIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -370,6 +366,97 @@ body::-webkit-scrollbar {
     box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
 
+/* ─── Calculator Item Cards ─────────────────────────── */
+.calc-item-card {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 0.8rem;
+    width: 110px;
+    height: 148px;
+    gap: 0.4rem;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+    will-change: transform;
+    overflow: hidden;
+}
+
+.calc-item-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--loss-color);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+.calc-item-card .card-img {
+    width: 62px;
+    height: 62px;
+    object-fit: contain;
+    transition: transform 0.2s ease;
+}
+
+.calc-item-card:hover .card-img {
+    transform: scale(0.9);
+}
+
+.calc-item-card .card-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-align: center;
+    color: #FFF;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+}
+
+.calc-item-card .card-val {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--primary-hover);
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.calc-item-card .remove-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(220, 38, 38, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.calc-item-card:hover .remove-overlay {
+    opacity: 1;
+}
+
+.calc-item-card .remove-overlay svg {
+    width: 32px;
+    height: 32px;
+    fill: #FFF;
+    margin-bottom: 0.2rem;
+    animation: pop 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.calc-item-card .remove-overlay span {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #FFF;
+}
+
 /* ─── Diff Engine ────────────────────────────────────── */
 .diff-engine {
     background: rgba(13,20,38,0.85);
@@ -412,7 +499,6 @@ body::-webkit-scrollbar {
     border-radius: 10px;
     /* Smooth bar transition */
     transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1), background 0.5s ease;
-    box-shadow: 0 0 16px currentColor;
     will-change: width, background;
 }
 
@@ -424,7 +510,7 @@ body::-webkit-scrollbar {
     font-weight: 800;
     background: rgba(0,0,0,0.4);
     border: 2px solid rgba(255,255,255,0.08);
-    transition: color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: color 0.4s ease, border-color 0.4s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     -webkit-user-select: none;
     user-select: none;
     will-change: transform;
@@ -432,15 +518,13 @@ body::-webkit-scrollbar {
 
 .diff-result-badge.win {
     color: var(--win-color);
-    border-color: rgba(16,185,129,0.4);
-    box-shadow: 0 0 30px rgba(16,185,129,0.25);
+    border-color: var(--win-color);
     animation: pop 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .diff-result-badge.loss {
     color: var(--loss-color);
-    border-color: rgba(239,68,68,0.4);
-    box-shadow: 0 0 30px rgba(239,68,68,0.25);
+    border-color: var(--loss-color);
     animation: pop 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -555,28 +639,32 @@ body::-webkit-scrollbar {
     display: none;
     position: fixed;
     inset: 0;
-    background: #060B19;
-    z-index: 99999;
+    background: #0a0d14;
+    z-index: 999999;
     align-items: center;
     justify-content: center;
     flex-direction: column;
     gap: 1.5rem;
     text-align: center;
     padding: 2rem;
+    font-family: var(--font-family);
 }
 
 #tamper-shield.active { display: flex; }
 
 #tamper-shield h2 {
-    font-size: 2rem;
+    font-size: 2.2rem;
     font-weight: 800;
     color: var(--loss-color);
+    letter-spacing: -0.5px;
+    margin-top: 0.5rem;
 }
 
 #tamper-shield p {
     color: var(--text-secondary);
     font-size: 1.1rem;
-    max-width: 450px;
+    max-width: 480px;
+    line-height: 1.6;
 }
 
 /* ─── Keyframes ──────────────────────────────────────── */

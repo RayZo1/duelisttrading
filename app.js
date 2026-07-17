@@ -1,6 +1,105 @@
 const IMAGE_BASE = 'https://raw.githubusercontent.com/RayZo1/duelisttrading/main/';
 
-document.getElementById('view-calculator').addEventListener('contextmenu', e => e.preventDefault());
+// ─── Security: Anti-Tamper & Scam Prevention ──────────────────────────────────
+function triggerTamperShield(reason) {
+    const shield = document.getElementById('tamper-shield');
+    if (shield) {
+        shield.querySelector('p').textContent = reason || 'Developer options are disabled on this platform to prevent value tampering and secure trade calculations.';
+        shield.classList.add('active');
+        const container = document.querySelector('.container');
+        if (container) container.style.filter = 'blur(10px)';
+        const navbar = document.querySelector('.navbar');
+        if (navbar) navbar.style.filter = 'blur(10px)';
+    }
+}
+
+// Disable right click globally
+document.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    return false;
+});
+
+// Disable common dev tools keys
+document.addEventListener('keydown', (e) => {
+    // F12
+    if (e.key === 'F12' || e.keyCode === 123) {
+        e.preventDefault();
+        triggerTamperShield('F12 Developer Tools are disabled on this platform.');
+        return false;
+    }
+    // Ctrl+Shift+I or Cmd+Option+I
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.keyCode === 73)) {
+        e.preventDefault();
+        triggerTamperShield('Element inspector is disabled on this platform.');
+        return false;
+    }
+    // Ctrl+Shift+J or Cmd+Option+J
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'J' || e.key === 'j' || e.keyCode === 74)) {
+        e.preventDefault();
+        triggerTamperShield('Developer console is disabled on this platform.');
+        return false;
+    }
+    // Ctrl+Shift+C or Cmd+Option+C
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'C' || e.key === 'c' || e.keyCode === 67)) {
+        e.preventDefault();
+        triggerTamperShield('Inspector selection tool is disabled.');
+        return false;
+    }
+    // Ctrl+U or Cmd+U
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'U' || e.key === 'u' || e.keyCode === 85)) {
+        e.preventDefault();
+        triggerTamperShield('Viewing source code is disabled.');
+        return false;
+    }
+});
+
+// Advanced DevTools detection (using console.log timing & debugger loops)
+const devtoolsDetector = {
+    isOpen: false,
+    init() {
+        // Getter on elements printed to console
+        const element = new Image();
+        Object.defineProperty(element, 'id', {
+            get: () => {
+                this.isOpen = true;
+                triggerTamperShield('Developer Console activity detected.');
+            }
+        });
+        
+        setInterval(() => {
+            this.isOpen = false;
+            console.log(element);
+            console.clear();
+            if (this.isOpen) {
+                triggerTamperShield('Developer Console detected.');
+            }
+        }, 1000);
+
+        // Debugger check (pauses execution if tools are open)
+        setInterval(() => {
+            const start = performance.now();
+            debugger;
+            const end = performance.now();
+            if (end - start > 100) {
+                triggerTamperShield('Tamper protection active.');
+            }
+        }, 1000);
+        
+        // Mismatch window layout check
+        setInterval(() => {
+            const threshold = 160;
+            const widthDiff = window.outerWidth - window.innerWidth;
+            const heightDiff = window.outerHeight - window.innerHeight;
+            // Only trigger if we aren't in standard iframe preview state
+            if (window.self === window.top) {
+                if (widthDiff > threshold || heightDiff > threshold) {
+                    triggerTamperShield('Inspection panel detected.');
+                }
+            }
+        }, 1000);
+    }
+};
+devtoolsDetector.init();
 
 let dbRef = null;
 
@@ -214,6 +313,7 @@ function renderModalItems(query) {
 
 // ─── Calculator ───────────────────────────────────────────────────────────────
 async function addItem(item) {
+    const side = currentSide;
     closeModal();
 
     // ── ANTI-TAMPER: verify value live from Firebase before accepting ────────
@@ -235,7 +335,7 @@ async function addItem(item) {
         calcId:   Date.now() + Math.random()
     });
 
-    if (currentSide === 'your') yourOffer.push(entry);
+    if (side === 'your') yourOffer.push(entry);
     else theirOffer.push(entry);
 
     redrawCalc();
@@ -249,50 +349,24 @@ function removeItem(side, calcId) {
 
 function makeCalcCard(item, side) {
     const wrap = document.createElement('div');
-    wrap.style.cssText = `
-        position:relative; display:inline-flex; flex-direction:column;
-        align-items:center; background:var(--card-bg);
-        border:1px solid var(--border-color); border-radius:14px;
-        padding:0.8rem; width:116px; gap:0.4rem;
-        transition: transform 0.25s cubic-bezier(0.22,1,0.36,1), box-shadow 0.25s ease;
-        will-change: transform;
+    wrap.className = 'calc-item-card';
+
+    wrap.innerHTML = `
+        <div class="remove-overlay">
+            <svg viewBox="0 0 24 24">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+            <span>Remove</span>
+        </div>
+        <img src="${item.image}" class="card-img" onerror="this.onerror=null;this.style.display='none';">
+        <div class="card-name">${item.name || 'Unnamed'}</div>
+        <div class="card-val">${fmt(item.value)}</div>
     `;
-    wrap.addEventListener('mouseenter', () => {
-        wrap.style.transform = 'translateY(-4px)';
-        wrap.style.boxShadow = '0 10px 25px rgba(0,0,0,0.4)';
-    });
-    wrap.addEventListener('mouseleave', () => {
-        wrap.style.transform = 'translateY(0)';
-        wrap.style.boxShadow = 'none';
+
+    wrap.addEventListener('click', () => {
+        removeItem(side, item.calcId);
     });
 
-    const del = document.createElement('button');
-    del.innerHTML = '×';
-    del.style.cssText = `
-        position:absolute; top:5px; right:5px; width:22px; height:22px;
-        border-radius:50%; border:none; background:rgba(239,68,68,0.2);
-        color:#EF4444; cursor:pointer; font-size:1rem; line-height:1;
-        display:flex; align-items:center; justify-content:center;
-        transition: background 0.15s ease;
-    `;
-    del.addEventListener('mouseenter', () => del.style.background = 'rgba(239,68,68,0.5)');
-    del.addEventListener('mouseleave', () => del.style.background = 'rgba(239,68,68,0.2)');
-    del.addEventListener('click', (e) => { e.stopPropagation(); removeItem(side, item.calcId); });
-
-    const img = document.createElement('img');
-    img.src = item.image;
-    img.style.cssText = 'width:62px;height:62px;object-fit:contain;';
-    img.onerror = () => { img.onerror = null; img.style.display = 'none'; };
-
-    const name = document.createElement('div');
-    name.textContent = item.name;
-    name.style.cssText = 'font-size:0.78rem;font-weight:600;text-align:center;color:#FFF;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;';
-
-    const val = document.createElement('div');
-    val.textContent = fmt(item.value);
-    val.style.cssText = 'font-size:0.82rem;font-weight:700;color:var(--primary-hover);user-select:none;-webkit-user-select:none;';
-
-    wrap.append(del, img, name, val);
     return wrap;
 }
 
@@ -321,15 +395,15 @@ function redrawCalc() {
     } else {
         diffFillEl.style.width = ((yt / (yt + tt)) * 100).toFixed(2) + '%';
         if (diff > 0) {
-            diffTextEl.textContent = 'WIN  +' + fmt(diff);
+            diffTextEl.textContent = '+' + Math.round(diff).toLocaleString();
             diffTextEl.className   = 'diff-result-badge win';
             diffFillEl.style.background = 'var(--win-color)';
         } else if (diff < 0) {
-            diffTextEl.textContent = 'LOSS  -' + fmt(Math.abs(diff));
+            diffTextEl.textContent = '-' + Math.round(Math.abs(diff)).toLocaleString();
             diffTextEl.className   = 'diff-result-badge loss';
             diffFillEl.style.background = 'var(--loss-color)';
         } else {
-            diffTextEl.textContent = 'FAIR TRADE';
+            diffTextEl.textContent = '0';
             diffTextEl.className   = 'diff-result-badge';
             diffFillEl.style.background = '#F59E0B';
         }

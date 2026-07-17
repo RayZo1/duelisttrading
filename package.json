@@ -1,0 +1,14 @@
+{
+  "name": "duelisttrading",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "echo 'No build required'",
+    "lint": "echo 'No lint required'",
+    "dev": "node server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
