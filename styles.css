@@ -217,33 +217,9 @@ body::-webkit-scrollbar {
     position: relative;
     overflow: hidden;
     cursor: default;
-    /* Promote to GPU layer immediately to avoid jank on first hover */
     transform: perspective(800px) rotateX(0deg) rotateY(0deg) translateZ(0);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
     will-change: transform;
-}
-
-/* Shine sweep — left→right on enter, right→left on leave via transition */
-.item-card::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-        110deg,
-        transparent 30%,
-        rgba(255,255,255,0.12) 50%,
-        transparent 70%
-    );
-    background-size: 300% 100%;
-    background-position: -100% 0;
-    transition: background-position 0.55s cubic-bezier(0.22, 1, 0.36, 1);
-    pointer-events: none;
-    z-index: 5;
-    border-radius: 20px;
-}
-
-.item-card:hover::after {
-    background-position: 200% 0;
 }
 
 .item-card:hover {
