@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Duelist Values</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
 
     <nav class="navbar">
         <div class="logo"><span>DUELIST</span><span>VALUES</span></div>
@@ -18,83 +20,75 @@
     </nav>
 
     <div class="container">
-        
+
         <!-- Values View -->
         <div id="view-values">
             <div class="page-header">
-                <h1>Duelist Trading Values</h1>
-                <p style="color: var(--text-secondary);">The largest Value List for Roblox Duelist, providing the community with accurate values.</p>
+                <h1>Trading Values</h1>
+                <p>The largest, most accurate Value List for Roblox Duelist.</p>
             </div>
-
-            <div class="categories" id="category-container">
-                <!-- Injected via JS -->
-            </div>
-
             <div class="search-container">
-                <input type="text" class="search-input" id="search-input" placeholder="Search item...">
+                <input type="text" class="search-input" id="search-input" placeholder="Search for items...">
             </div>
-
-            <div class="items-grid" id="items-grid">
-                <!-- Injected via JS -->
-            </div>
+            <div class="categories" id="category-container"></div>
+            <div class="items-grid" id="items-grid"></div>
         </div>
 
         <!-- Calculator View -->
         <div id="view-calculator" class="calculator-section hidden">
             <div class="page-header">
-                <h1>Duelist Trading Calculator</h1>
+                <h1>Trade Calculator</h1>
+                <p>Values are verified live from the database — they cannot be edited.</p>
             </div>
 
-            <div class="calc-sides">
-                <div class="calc-side">
+            <div class="calc-arena">
+                <div class="calc-side your-side">
                     <div class="calc-side-header">
-                        <span>Your Offer</span>
-                        <span id="your-total">$0</span>
+                        <span class="side-title">Your Offer</span>
+                        <span id="your-total" style="font-weight:700;">$0</span>
                     </div>
-                    <div class="calc-items" id="your-items">
-                        <button class="add-item-btn" onclick="openModal('your')">+</button>
+                    <div class="calc-items">
+                        <div id="your-items-list" style="display:contents;"></div>
+                        <button class="add-item-btn" id="btn-add-your">+</button>
                     </div>
                 </div>
 
-                <div class="calc-side">
+                <div class="calc-side their-side">
                     <div class="calc-side-header">
-                        <span>Their Offer</span>
-                        <span id="their-total">$0</span>
+                        <span class="side-title">Their Offer</span>
+                        <span id="their-total" style="font-weight:700;">$0</span>
                     </div>
-                    <div class="calc-items" id="their-items">
-                        <button class="add-item-btn" onclick="openModal('their')">+</button>
+                    <div class="calc-items">
+                        <div id="their-items-list" style="display:contents;"></div>
+                        <button class="add-item-btn" id="btn-add-their">+</button>
                     </div>
                 </div>
             </div>
 
-            <div class="diff-container">
-                <div style="display:flex; justify-content:space-between; font-size:0.9rem; color:var(--text-secondary)">
+            <div class="diff-engine">
+                <div class="diff-engine-header">
                     <span>You: <span id="diff-you">$0</span></span>
                     <span>Them: <span id="diff-them">$0</span></span>
                 </div>
-                <div class="diff-bar">
-                    <div class="diff-fill" id="diff-fill"></div>
+                <div class="diff-bar-track">
+                    <div class="diff-bar-fill" id="diff-fill"></div>
                 </div>
-                <div class="diff-text" id="diff-text">
-                    $0
-                </div>
+                <div class="diff-result-badge" id="diff-text">Add Items</div>
             </div>
         </div>
 
     </div>
 
-    <!-- Modal for selecting items -->
+    <!-- Modal -->
     <div class="modal-overlay" id="item-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <input type="text" class="modal-search" id="modal-search" placeholder="Search item...">
+                <input type="text" class="modal-search" id="modal-search" placeholder="Search item to add...">
             </div>
-            <div class="modal-body" id="modal-body">
-                <!-- Injected via JS -->
-            </div>
+            <div class="modal-body" id="modal-body"></div>
         </div>
     </div>
 
-    <script type="module" src="app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
