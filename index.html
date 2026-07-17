@@ -24,8 +24,8 @@
         <!-- Values View -->
         <div id="view-values">
             <div class="page-header">
-                <h1>Trading Values Catalog</h1>
-                <p>Official, live-verified values for all Duelist items. Accurate and up-to-date.</p>
+                <h1>Values List</h1>
+                <p>This is a BETA version so please be patient.</p>
             </div>
             <div class="search-container">
                 <input type="text" class="search-input" id="search-input" placeholder="Search for items...">
@@ -38,13 +38,13 @@
         <div id="view-calculator" class="calculator-section hidden">
             <div class="page-header">
                 <h1>Trade Calculator</h1>
-                <p>Instantly evaluate trade values and determine win/loss margins with real-time calculations.</p>
+                <p>See if you lose or win a trade according to Duelist Trading.</p>
             </div>
 
             <div class="calc-arena">
                 <div class="calc-side your-side">
                     <div class="calc-side-header">
-                        <span class="side-title">Your Offer</span>
+                        <span class="side-title">You</span>
                         <span id="your-total" style="font-weight:700;">$0</span>
                     </div>
                     <div class="calc-items">
@@ -55,7 +55,7 @@
 
                 <div class="calc-side their-side">
                     <div class="calc-side-header">
-                        <span class="side-title">Their Offer</span>
+                        <span class="side-title">Them</span>
                         <span id="their-total" style="font-weight:700;">$0</span>
                     </div>
                     <div class="calc-items">
@@ -94,11 +94,10 @@
         <svg style="width: 48px; height: 48px; fill: var(--loss-color); margin-bottom: 0.5rem;" viewBox="0 0 24 24">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
         </svg>
-        <h2>Security Policy Active</h2>
+        <h2>Can't Acess This</h2>
         <p>Developer options are disabled on this platform to prevent value tampering and secure trade calculations.</p>
         <button class="nav-btn active" onclick="location.reload()" style="background: var(--primary-color); border: none; color: white; padding: 0.8rem 2rem; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 1rem; transition: background 0.2s; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">Reload Platform</button>
     </div>
-
     <script src="app.js"></script>
 </body>
 </html>
