@@ -100,8 +100,8 @@ body::-webkit-scrollbar {
 }
 
 .nav-btn.active {
-    background: var(--primary-color);
     color: #FFF;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
 }
 
 /* ─── Layout ─────────────────────────────────────────── */
