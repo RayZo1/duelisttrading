@@ -1,6 +1,7 @@
 const IMAGE_BASE = 'https://raw.githubusercontent.com/RayZo1/duelisttrading/main/';
+const CACHE_BUSTER = Date.now() + '_' + Math.floor(Math.random() * 1000);
 
-// ─── Security: Anti-Tamper & Scam Prevention ──────────────────────────────────
+// anti-tamper security check
 function triggerTamperShield(reason) {
     const shield = document.getElementById('tamper-shield');
     if (shield) {
@@ -13,13 +14,13 @@ function triggerTamperShield(reason) {
     }
 }
 
-// Disable right click globally
+// block right click
 document.addEventListener('contextmenu', e => {
     e.preventDefault();
     return false;
 });
 
-// Disable common dev tools keys
+// block dev tools keys
 document.addEventListener('keydown', (e) => {
     // F12
     if (e.key === 'F12' || e.keyCode === 123) {
@@ -53,7 +54,7 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Advanced DevTools detection (using console.log timing & debugger loops)
+// devtools detector
 const devtoolsDetector = {
     isOpen: false,
     init() {
@@ -103,9 +104,12 @@ devtoolsDetector.init();
 
 let dbRef = null;
 
-// ─── DOM Elements ─────────────────────────────────────────────────────────────
+// dom els
+const tabHome      = document.getElementById('tab-home');
+const logoHome     = document.getElementById('logo-home');
 const tabValues    = document.getElementById('tab-values');
 const tabCalc      = document.getElementById('tab-calculator');
+const viewHome     = document.getElementById('view-home');
 const viewValues   = document.getElementById('view-values');
 const viewCalc     = document.getElementById('view-calculator');
 const catContainer = document.getElementById('category-container');
@@ -128,8 +132,7 @@ const modal      = document.getElementById('item-modal');
 const modalSearch = document.getElementById('modal-search');
 const modalBody  = document.getElementById('modal-body');
 
-// ─── State ────────────────────────────────────────────────────────────────────
-// itemsData holds FROZEN objects — values cannot be mutated from the console
+// itemsData
 let itemsData      = [];
 let activeCategory = 'All';
 let searchQuery    = '';
@@ -137,24 +140,23 @@ let yourOffer      = [];
 let theirOffer     = [];
 let currentSide    = null;
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-const fmt = (n) => '$' + Math.round(n || 0).toLocaleString();
+const fmt = (n) => (n === null || n === undefined) ? '???' : '$' + Math.round(n).toLocaleString();
 
-// ─── Anti-Tamper: value verification ──────────────────────────────────────────
-// Before adding any item to the calculator, re-fetch its value live from
-// Firebase so a user can't paste fake data into the console.
-// itemId is now "Category/Item Name" e.g. "Pistol/Red Beam"
+// check value
 async function getVerifiedValue(itemId) {
     try {
         const snap = await firebase.database().ref(itemId).once('value');
         const data = snap.val();
-        return data ? data.value : null;
+        if (data) {
+            return data.value !== undefined ? data.value : null;
+        }
+        return null;
     } catch (_) {
         return null;
     }
 }
 
-// ─── Modal ────────────────────────────────────────────────────────────────────
+// modal controls
 function openModal(side) {
     currentSide = side;
     modalSearch.value = '';
@@ -173,30 +175,76 @@ btnAddTheir.addEventListener('click', () => openModal('their'));
 modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 modalSearch.addEventListener('input', (e) => renderModalItems(e.target.value));
 
-// ─── Tabs ─────────────────────────────────────────────────────────────────────
-tabValues.addEventListener('click', () => {
-    tabValues.classList.add('active');
-    tabCalc.classList.remove('active');
-    viewValues.classList.remove('hidden');
-    viewCalc.classList.add('hidden');
-    activeCategory = 'All';
-    setupCategories();
-    renderGrid();
-});
+// 3d tilt utility
+function applyTiltEffect(card) {
+    let rafId = null;
+    let targetRX = 0, targetRY = 0;
+    let currentRX = 0, currentRY = 0;
 
-tabCalc.addEventListener('click', () => {
-    tabCalc.classList.add('active');
-    tabValues.classList.remove('active');
-    viewCalc.classList.remove('hidden');
-    viewValues.classList.add('hidden');
-});
+    function animateTilt() {
+        currentRX += (targetRX - currentRX) * 0.12;
+        currentRY += (targetRY - currentRY) * 0.12;
+
+        card.style.transform =
+            `perspective(800px) rotateX(${currentRX}deg) rotateY(${currentRY}deg) scale3d(1.03,1.03,1.03)`;
+
+        if (Math.abs(targetRX - currentRX) > 0.01 || Math.abs(targetRY - currentRY) > 0.01) {
+            rafId = requestAnimationFrame(animateTilt);
+        } else {
+            rafId = null;
+        }
+    }
+
+    card.addEventListener('mousemove', (e) => {
+        const r = card.getBoundingClientRect();
+        const x = e.clientX - r.left, y = e.clientY - r.top;
+        targetRX = ((y - r.height / 2) / r.height) * 8;
+        targetRY = ((x - r.width  / 2) / r.width)  * -8;
+        if (!rafId) rafId = requestAnimationFrame(animateTilt);
+    });
+
+    card.addEventListener('mouseleave', () => {
+        targetRX = 0;
+        targetRY = 0;
+        if (!rafId) rafId = requestAnimationFrame(animateTilt);
+    });
+}
+
+// initialize tilt on home page cards
+document.querySelectorAll('.home-card').forEach(applyTiltEffect);
+
+// tab switching
+function switchView(target) {
+    tabHome.classList.toggle('active', target === 'home');
+    tabValues.classList.toggle('active', target === 'values');
+    tabCalc.classList.toggle('active', target === 'calc');
+
+    viewHome.classList.toggle('hidden', target !== 'home');
+    viewValues.classList.toggle('hidden', target !== 'values');
+    viewCalc.classList.toggle('hidden', target !== 'calc');
+
+    if (target === 'values') {
+        activeCategory = 'All';
+        setupCategories();
+        renderGrid();
+    }
+}
+
+tabHome.addEventListener('click', () => switchView('home'));
+logoHome.addEventListener('click', () => switchView('home'));
+tabValues.addEventListener('click', () => switchView('values'));
+tabCalc.addEventListener('click', () => switchView('calc'));
+
+// home page links
+document.getElementById('card-to-values').addEventListener('click', () => switchView('values'));
+document.getElementById('card-to-calc').addEventListener('click', () => switchView('calc'));
 
 searchInput.addEventListener('input', (e) => {
     searchQuery = e.target.value.toLowerCase();
     renderGrid();
 });
 
-// ─── Categories ───────────────────────────────────────────────────────────────
+// categories list
 function setupCategories() {
     const cats = ['All', ...new Set(itemsData.map(i => i.category).filter(Boolean))];
     catContainer.innerHTML = '';
@@ -214,7 +262,7 @@ function setupCategories() {
     });
 }
 
-// ─── Values Grid ──────────────────────────────────────────────────────────────
+// main list grid
 function renderGrid() {
     let list = itemsData;
     if (activeCategory !== 'All') list = list.filter(i => i.category === activeCategory);
@@ -233,57 +281,40 @@ function renderGrid() {
         card.style.animationDelay = `${idx * 0.04}s`;
         card.style.animation = `fadeInUp 0.5s ${idx * 0.04}s cubic-bezier(0.22,1,0.36,1) both`;
 
+        card.addEventListener('animationend', () => {
+            card.style.animation = 'none';
+        });
+
         card.innerHTML = `
-            <div class="card-header">
-                <span class="badge">${item.category || 'Item'}</span>
-                <span class="badge">${item.rarity || 'Common'}</span>
-            </div>
+            <div class="card-title" style="margin-top: 0.5rem; margin-bottom: 1rem;">${item.name || 'Unnamed'}</div>
             <img src="${item.image}" alt="${item.name}" class="card-image" onerror="this.onerror=null;this.style.display='none';">
-            <div class="card-title">${item.name || 'Unnamed'}</div>
-            <div class="card-value-container">
-                <span class="value-label">Value</span>
-                <span class="value-amount">${fmt(item.value)}</span>
+            <div class="card-value-container" style="text-align: left; margin-top: auto;">
+                <div class="card-stat-row">
+                    <span class="stat-label">Value</span>
+                    <span class="stat-val highlight-value">${fmt(item.value)}</span>
+                </div>
+                <div class="card-stat-row">
+                    <span class="stat-label">Type</span>
+                    <span class="stat-val">${item.category || 'Item'}</span>
+                </div>
+                <div class="card-stat-row">
+                    <span class="stat-label">Rarity</span>
+                    <span class="stat-val">${item.rarity || 'Common'}</span>
+                </div>
+                <div class="card-stat-row">
+                    <span class="stat-label">Demand</span>
+                    <span class="stat-val highlight-demand">${item.demand || 'High'}</span>
+                </div>
             </div>
         `;
         itemsGrid.appendChild(card);
 
-        // ── GPU-smooth 3D tilt using requestAnimationFrame ──────────────────
-        let rafId = null;
-        let targetRX = 0, targetRY = 0;
-        let currentRX = 0, currentRY = 0;
-
-        function animateTilt() {
-            // Lerp toward target for buttery smoothness
-            currentRX += (targetRX - currentRX) * 0.12;
-            currentRY += (targetRY - currentRY) * 0.12;
-
-            card.style.transform =
-                `perspective(800px) rotateX(${currentRX}deg) rotateY(${currentRY}deg) scale3d(1.03,1.03,1.03)`;
-
-            if (Math.abs(targetRX - currentRX) > 0.01 || Math.abs(targetRY - currentRY) > 0.01) {
-                rafId = requestAnimationFrame(animateTilt);
-            } else {
-                rafId = null;
-            }
-        }
-
-        card.addEventListener('mousemove', (e) => {
-            const r = card.getBoundingClientRect();
-            const x = e.clientX - r.left, y = e.clientY - r.top;
-            targetRX = ((y - r.height / 2) / r.height) * -18;
-            targetRY = ((x - r.width  / 2) / r.width)  *  18;
-            if (!rafId) rafId = requestAnimationFrame(animateTilt);
-        });
-
-        card.addEventListener('mouseleave', () => {
-            targetRX = 0;
-            targetRY = 0;
-            if (!rafId) rafId = requestAnimationFrame(animateTilt);
-        });
+        // apply 3d tilt effect
+        applyTiltEffect(card);
     });
 }
 
-// ─── Modal Items ──────────────────────────────────────────────────────────────
+// items in modal
 function renderModalItems(query) {
     let list = query
         ? itemsData.filter(i => i.name && i.name.toLowerCase().includes(query.toLowerCase()))
@@ -311,27 +342,26 @@ function renderModalItems(query) {
     });
 }
 
-// ─── Calculator ───────────────────────────────────────────────────────────────
+// calculator logic
 async function addItem(item) {
     const side = currentSide;
     closeModal();
 
-    // ── ANTI-TAMPER: verify value live from Firebase before accepting ────────
-    const verifiedValue = await getVerifiedValue(item.id);
+    // verify live value first
+    let verifiedValue = await getVerifiedValue(item.id);
     if (verifiedValue === null) {
-        // Could not verify — reject silently
-        console.warn('Could not verify value for item:', item.name);
-        return;
+        // Fallback to loaded item value (or null if missing)
+        verifiedValue = item.value;
     }
 
-    // Use the Firebase-authoritative value, not whatever is in memory
+    // save immutable entry
     const entry = Object.freeze({
         id:       item.id,
         name:     item.name,
         image:    item.image,
         category: item.category,
         rarity:   item.rarity,
-        value:    verifiedValue,   // ← always the server value
+        value:    verifiedValue !== undefined ? verifiedValue : null,   // always the server value
         calcId:   Date.now() + Math.random()
     });
 
@@ -371,8 +401,8 @@ function makeCalcCard(item, side) {
 }
 
 function redrawCalc() {
-    const yt = yourOffer.reduce((s, i) => s + i.value, 0);
-    const tt = theirOffer.reduce((s, i) => s + i.value, 0);
+    const yt = yourOffer.reduce((s, i) => s + (i.value || 0), 0);
+    const tt = theirOffer.reduce((s, i) => s + (i.value || 0), 0);
 
     yourTotalEl.textContent  = fmt(yt);
     theirTotalEl.textContent = fmt(tt);
@@ -385,7 +415,7 @@ function redrawCalc() {
     yourOffer.forEach(item  => yourList.appendChild(makeCalcCard(item, 'your')));
     theirOffer.forEach(item => theirList.appendChild(makeCalcCard(item, 'their')));
 
-    // Diff bar
+    // calculate totals
     const diff = tt - yt;
     if (yt === 0 && tt === 0) {
         diffTextEl.textContent = 'Add Items';
@@ -410,7 +440,7 @@ function redrawCalc() {
     }
 }
 
-// ─── Firebase ─────────────────────────────────────────────────────────────────
+// init connection
 async function initFirebase() {
     itemsGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-secondary);">Loading items...</div>';
 
@@ -431,7 +461,7 @@ async function initFirebase() {
 
         if (data) {
             itemsData = [];
-            // New format: { "Category": { "Item Name": { image, name, rarity, value } } }
+            // parse category
             Object.keys(data).forEach(category => {
                 const catItems = data[category];
                 if (!catItems || typeof catItems !== 'object') return;
@@ -440,11 +470,12 @@ async function initFirebase() {
                     itemsData.push(Object.freeze({
                         id:       `${category}/${itemKey}`,   // e.g. "Pistol/Red Beam"
                         category: category,
-                        name:     item.name     || itemKey,
+                        name:     itemKey,
                         rarity:   item.rarity   || 'Common',
-                        value:    item.value     || 0,
-                        // Pull image straight from GitHub — just the filename in Firebase
-                        image:    IMAGE_BASE + (item.image || ''),
+                        value:    (item.value !== undefined && item.value !== null && item.value !== "") ? item.value : null,
+                        demand:   item.demand || '???',
+                        // Pull image from github
+                        image:    IMAGE_BASE + (item.image || '') + '?v=' + CACHE_BUSTER,
                     }));
                 });
             });
