@@ -2,6 +2,9 @@
 //  DUELIST VALUES — app.js
 // ═══════════════════════════════════════════════════════
 
+// Images are served directly from GitHub — just upload the file to the repo
+const IMAGE_BASE = 'https://raw.githubusercontent.com/RayZo1/duelisttrading/main/';
+
 // Disable right-click on the calculator to prevent easy DOM inspection
 document.getElementById('view-calculator').addEventListener('contextmenu', e => e.preventDefault());
 
@@ -373,8 +376,8 @@ async function initFirebase() {
                         name:     item.name     || itemKey,
                         rarity:   item.rarity   || 'Common',
                         value:    item.value     || 0,
-                        // Auto-prepend assets/ — no need to type it in Firebase
-                        image:    'assets/' + (item.image || ''),
+                        // Pull image straight from GitHub — just the filename in Firebase
+                        image:    IMAGE_BASE + (item.image || ''),
                     }));
                 });
             });
