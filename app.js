@@ -1,14 +1,7 @@
-// ═══════════════════════════════════════════════════════
-//  DUELIST VALUES — app.js
-// ═══════════════════════════════════════════════════════
-
-// Images are served directly from GitHub — just upload the file to the repo
 const IMAGE_BASE = 'https://raw.githubusercontent.com/RayZo1/duelisttrading/main/';
 
-// Disable right-click on the calculator to prevent easy DOM inspection
 document.getElementById('view-calculator').addEventListener('contextmenu', e => e.preventDefault());
 
-// ─── Firebase reference ───────────────────────────────────────────────────────
 let dbRef = null;
 
 // ─── DOM Elements ─────────────────────────────────────────────────────────────
