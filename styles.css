@@ -102,7 +102,7 @@ body::-webkit-scrollbar {
 .nav-btn.active {
     background: var(--primary-color);
     color: #FFF;
-    box-shadow: 0 4px 18px rgba(59, 130, 246, 0.45);
+    box-shadow: none;
 }
 
 /* ─── Layout ─────────────────────────────────────────── */
@@ -258,7 +258,6 @@ body::-webkit-scrollbar {
 .card-image {
     width: 100%;
     height: 150px;
-    border-radius: 20px;
     object-fit: contain;
     margin-bottom: 1.2rem;
     filter: drop-shadow(0 8px 16px rgba(0,0,0,0.5));
@@ -268,7 +267,6 @@ body::-webkit-scrollbar {
 
 .item-card:hover .card-image {
     transform: translateY(-6px) scale(1.05);
-    border-radius: 12px;
 }
 
 .card-value-container {
@@ -293,7 +291,6 @@ body::-webkit-scrollbar {
     font-size: 1.55rem;
     font-weight: 800;
     color: #FFF;
-    /* Prevent selecting / copying values */
     -webkit-user-select: none;
     user-select: none;
 }
